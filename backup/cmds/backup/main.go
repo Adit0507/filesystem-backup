@@ -1,10 +1,24 @@
 package backup
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
+	"fmt"
 	"log"
+	"strings"
+
+	"github.com/matryer/filedb"
 )
+
+type path struct {
+	Path string
+	Hash string
+}
+
+func (p *path) String() string {
+	return fmt.Sprintf("%s [%s]", p.Path, p.Hash)
+}
 
 func main() {
 	var fatalErr error
@@ -22,6 +36,38 @@ func main() {
 	if len(args) < 1 {
 		fatalErr = errors.New("invalid usage; must specify command")
 		return
+	}
+
+	// filedb, a database is a folder, and a collection is a file where each line represents a different record
+	db, err := filedb.Dial(*dbPath)
+	if err != nil {
+		fatalErr = err
+		return
+	}
+	defer db.Close()
+
+	col, err := db.C("paths")
+	if err != nil {
+		fatalErr = err
+		return
+	}
+
+	switch strings.ToLower(args[0]) {
+	case "list":
+		var path path
+		col.ForEach(func(i int, data []byte) bool {
+			err := json.Unmarshal(data, &path)
+			if err != nil {
+				fatalErr = err
+				return true
+			}
+
+			fmt.Printf("= %s\n", path)
+			return false
+		})
+
+	case "add":
+	case "remove":
 	}
 
 }
