@@ -39,7 +39,7 @@ func (m *Monitor) Now() (int, error) {
 
 func (m *Monitor) act(path string) error {
 	dirName := filepath.Base(path)	//returns last name of path	
-	fileName := fmt.Sprintf("%d.zip", time.Now().UnixNano())	//time.Now().UnixNano() is used to generate a timestamp filename
+	fileName := fmt.Sprintf(m.Archiver.DestFmt(), time.Now().UnixNano())	//time.Now().UnixNano() is used to generate a timestamp filename
 
 	// decidng where archive will go and callin Archive method
 	return m.Archiver.Archive(path, filepath.Join(m.Destination, dirName, fileName))

@@ -8,10 +8,15 @@ import (
 )
 
 type Archiver interface {
+	DestFmt() string
 	Archive(src, dest string) error //this method takes the source and dest. paths and returns an error
 }
 
 type zipper struct{}
+
+func (z *zipper) DestFmt() string {
+	return "%d.zip"
+}
 
 var ZIP Archiver = (*zipper)(nil)
 func (z *zipper) Archive(src, dest string) error {
