@@ -73,9 +73,9 @@ func main() {
 		}
 
 		for _, p := range args[1:] {
-			path := &path {Path: p, Hash: "Not yet archived"}
+			path := &path{Path: p, Hash: "Not yet archived"}
 			if err := col.InsertJSON(path); err != nil {
-				fatalErr  = err
+				fatalErr = err
 				return
 			}
 			fmt.Printf("+ %s\n", path)
@@ -83,13 +83,12 @@ func main() {
 
 	case "remove":
 		var path path
-		col.RemoveEach(func(i int, data[]byte) (bool, bool) {
+		col.RemoveEach(func(i int, data []byte) (bool, bool) {
 			err := json.Unmarshal(data, &path)
 			if err != nil {
-				fatalErr= err
+				fatalErr = err
 				return false, true
 			}
-
 			for _, p := range args[1:] {
 				if path.Path == p {
 					fmt.Printf("- %s\n", path)
