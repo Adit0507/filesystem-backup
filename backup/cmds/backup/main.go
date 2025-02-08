@@ -59,7 +59,7 @@ func main() {
 			err := json.Unmarshal(data, &path)
 			if err != nil {
 				fatalErr = err
-				return true
+				return false
 			}
 
 			fmt.Printf("= %s\n", path)
