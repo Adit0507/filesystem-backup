@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"flag"
 	"log"
 	"time"
@@ -23,12 +25,12 @@ func main() {
 	}()
 
 	var (
-		// represents no. of seconds b/w chekcs to see whether folders have changed 
-		interval  = flag.Duration("interval", 10*time.Second, "interval between checks")
-		
+		// represents no. of seconds b/w chekcs to see whether folders have changed
+		interval = flag.Duration("interval", 10*time.Second, "interval between checks")
+
 		// path to archve location where ZIP files go
 		archive = flag.String("archive", "archive", "path to archive location")
-		
+
 		// path to same filedb database
 		dbPath = flag.String("db", "./db", "path to filedb database")
 	)
@@ -37,8 +39,8 @@ func main() {
 
 	m := &backup.Monitor{
 		Destination: *archive,
-		Archiver: backup.ZIP,
-		Paths: make(map[string]string),
+		Archiver:    backup.ZIP,
+		Paths:       make(map[string]string),
 	}
 
 	db, err := filedb.Dial(*dbPath)
@@ -53,4 +55,24 @@ func main() {
 		fatalErr = err
 		return
 	}
+
+	var path path
+	col.ForEach(func(_ int, data []byte) bool {
+		if err := json.Unmarshal(data, &path); err != nil {
+			fatalErr = err
+			return true
+		}
+
+		m.Paths[path.Path] = path.Hash
+		return false
+	})
+
+	if fatalErr != nil {
+		return
+	}
+	if len(m.Paths) < 1 {
+		fatalErr = errors.New("no paths - use backup tool to add at least one")
+		return
+	}
+
 }
